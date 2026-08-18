@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Currency;
 use App\Models\Customer;
+use App\Models\Employee;
+use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -153,5 +157,46 @@ class CustomerApiTest extends TestCase
         $response = $this->get("/api/customers/{$customer->id}/ktp-photo");
 
         $response->assertNotFound();
+    }
+
+    public function test_transactions_lists_only_that_customers_history(): void
+    {
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+        $otherCustomer = Customer::create(['name' => 'Budi Santoso', 'identity_number' => '3171234567890002', 'phone' => '081234567891']);
+        $currency = Currency::create(['code' => 'USD']);
+        $employee = Employee::create(['name' => 'Dewi', 'position' => 'Teller']);
+        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
+
+        $ownTransaction = Transaction::create([
+            'transaction_number' => 'TRX-20260816-001',
+            'type' => 'buy',
+            'currency_id' => $currency->id,
+            'amount' => 500,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 7890000,
+            'customer_id' => $customer->id,
+            'employee_id' => $employee->id,
+            'user_id' => $user->id,
+        ]);
+
+        Transaction::create([
+            'transaction_number' => 'TRX-20260816-002',
+            'type' => 'sell',
+            'currency_id' => $currency->id,
+            'amount' => 200,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 3156000,
+            'customer_id' => $otherCustomer->id,
+            'employee_id' => $employee->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->getJson("/api/customers/{$customer->id}/transactions");
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $ownTransaction->id);
     }
 }

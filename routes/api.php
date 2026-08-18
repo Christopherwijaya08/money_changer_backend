@@ -22,6 +22,7 @@ Route::put('/customers/{customer}', [CustomerController::class, 'update']);
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
 Route::post('/customers/{customer}/ktp-photo', [CustomerController::class, 'uploadKtpPhoto']);
 Route::get('/customers/{customer}/ktp-photo', [CustomerController::class, 'ktpPhoto']);
+Route::get('/customers/{customer}/transactions', [CustomerController::class, 'transactions']);
 
 Route::get('/employees', [EmployeeController::class, 'index']);
 

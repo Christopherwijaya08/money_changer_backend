@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Resources\CustomerResource;
+use App\Http\Resources\TransactionResource;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -80,6 +81,16 @@ class CustomerController extends Controller
         abort_unless($customer->ktp_photo_path, 404);
 
         return Storage::disk('local')->response($customer->ktp_photo_path);
+    }
+
+    public function transactions(Request $request, Customer $customer)
+    {
+        $transactions = $customer->transactions()
+            ->with(['branch', 'currency', 'customer', 'employee', 'user'])
+            ->latest()
+            ->paginate($request->integer('per_page', 15));
+
+        return TransactionResource::collection($transactions);
     }
 
     private function dataWithPhoto(StoreCustomerRequest $request): array

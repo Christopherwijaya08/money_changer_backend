@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateExchangeRateRequest;
+use App\Http\Resources\ExchangeRateHistoryResource;
 use App\Http\Resources\ExchangeRateResource;
 use App\Models\Currency;
 use App\Models\ExchangeRateHistory;
+use Illuminate\Http\Request;
 
 class ExchangeRateController extends Controller
 {
@@ -49,5 +51,15 @@ class ExchangeRateController extends Controller
         }
 
         return new ExchangeRateResource($currency->load('latestExchangeRate.createdBy'));
+    }
+
+    public function history(Request $request, Currency $currency)
+    {
+        $history = ExchangeRateHistory::whereHas('exchangeRate', fn ($q) => $q->where('currency_id', $currency->id))
+            ->with('changedBy')
+            ->latest('changed_at')
+            ->paginate($request->integer('per_page', 15));
+
+        return ExchangeRateHistoryResource::collection($history);
     }
 }

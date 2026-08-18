@@ -122,4 +122,24 @@ class ExchangeRateApiTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_history_lists_changes_for_that_currency_only_newest_first(): void
+    {
+        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
+        $usd = Currency::create(['code' => 'USD']);
+        $sgd = Currency::create(['code' => 'SGD']);
+
+        $this->putJson("/api/exchange-rates/{$usd->id}", ['rate_buy' => 15700, 'rate_sell' => 15800, 'user_id' => $user->id]);
+        $this->putJson("/api/exchange-rates/{$usd->id}", ['rate_buy' => 15750, 'rate_sell' => 15850, 'user_id' => $user->id]);
+        $this->putJson("/api/exchange-rates/{$sgd->id}", ['rate_buy' => 11600, 'rate_sell' => 11750, 'user_id' => $user->id]);
+        $this->putJson("/api/exchange-rates/{$sgd->id}", ['rate_buy' => 11650, 'rate_sell' => 11800, 'user_id' => $user->id]);
+
+        $response = $this->getJson("/api/exchange-rates/{$usd->id}/history");
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.old_buy', '15700.00');
+        $response->assertJsonPath('data.0.new_buy', '15750.00');
+        $response->assertJsonPath('data.0.changed_by', 'Admin');
+    }
 }

@@ -22,3 +22,4 @@ Route::get('/employees', [EmployeeController::class, 'index']);
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);
+Route::get('/exchange-rates/{currency}/history', [ExchangeRateController::class, 'history']);

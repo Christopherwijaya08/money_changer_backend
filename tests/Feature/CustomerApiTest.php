@@ -55,4 +55,48 @@ class CustomerApiTest extends TestCase
         $byIdentity = $this->getJson('/api/customers?search=7890002');
         $byIdentity->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Budi Santoso');
     }
+
+    public function test_show_returns_customer_detail(): void
+    {
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+
+        $response = $this->getJson("/api/customers/{$customer->id}");
+
+        $response->assertOk();
+        $response->assertJsonPath('data.name', 'Andi Wijaya');
+    }
+
+    public function test_show_returns_404_for_unknown_customer(): void
+    {
+        $response = $this->getJson('/api/customers/999');
+
+        $response->assertNotFound();
+    }
+
+    public function test_update_changes_customer_fields(): void
+    {
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+
+        $response = $this->putJson("/api/customers/{$customer->id}", [
+            'name' => 'Andi Wijaya Kusuma',
+            'identity_number' => '3171234567890001',
+            'phone' => '081234567899',
+            'address' => 'Jl. Sudirman',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.name', 'Andi Wijaya Kusuma');
+        $response->assertJsonPath('data.phone', '081234567899');
+        $this->assertEquals('Andi Wijaya Kusuma', $customer->fresh()->name);
+    }
+
+    public function test_destroy_deletes_customer(): void
+    {
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+
+        $response = $this->deleteJson("/api/customers/{$customer->id}");
+
+        $response->assertNoContent();
+        $this->assertModelMissing($customer);
+    }
 }

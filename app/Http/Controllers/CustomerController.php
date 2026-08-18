@@ -33,6 +33,33 @@ class CustomerController extends Controller
 
     public function store(StoreCustomerRequest $request)
     {
+        $customer = Customer::create($this->dataWithPhoto($request));
+
+        return new CustomerResource($customer);
+    }
+
+    public function show(Customer $customer)
+    {
+        return new CustomerResource($customer);
+    }
+
+    // ponytail: reuses StoreCustomerRequest since the update rules are identical
+    public function update(StoreCustomerRequest $request, Customer $customer)
+    {
+        $customer->update($this->dataWithPhoto($request));
+
+        return new CustomerResource($customer);
+    }
+
+    public function destroy(Customer $customer)
+    {
+        $customer->delete();
+
+        return response()->noContent();
+    }
+
+    private function dataWithPhoto(StoreCustomerRequest $request): array
+    {
         $data = $request->validated();
         unset($data['ktp_photo']);
 
@@ -40,8 +67,6 @@ class CustomerController extends Controller
             $data['ktp_photo_path'] = $request->file('ktp_photo')->store('ktp-photos', 'local');
         }
 
-        $customer = Customer::create($data);
-
-        return new CustomerResource($customer);
+        return $data;
     }
 }

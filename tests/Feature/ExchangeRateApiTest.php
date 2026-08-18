@@ -64,4 +64,62 @@ class ExchangeRateApiTest extends TestCase
         $response->assertJsonPath('data.0.currency_code', 'EUR');
         $response->assertJsonPath('data.0.rate_buy', null);
     }
+
+    public function test_update_creates_first_rate_without_history(): void
+    {
+        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
+        $usd = Currency::create(['code' => 'USD']);
+
+        $response = $this->putJson("/api/exchange-rates/{$usd->id}", [
+            'rate_buy' => 15750,
+            'rate_sell' => 15850,
+            'user_id' => $user->id,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.rate_buy', '15750.00');
+        $this->assertDatabaseCount('exchange_rate_history', 0);
+    }
+
+    public function test_update_overwrites_todays_rate_and_logs_history(): void
+    {
+        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
+        $usd = Currency::create(['code' => 'USD']);
+        ExchangeRate::create([
+            'currency_id' => $usd->id,
+            'rate_buy' => 15700,
+            'rate_sell' => 15800,
+            'effective_date' => now()->toDateString(),
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->putJson("/api/exchange-rates/{$usd->id}", [
+            'rate_buy' => 15750,
+            'rate_sell' => 15850,
+            'user_id' => $user->id,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.rate_buy', '15750.00');
+        $this->assertDatabaseCount('exchange_rates', 1);
+        $this->assertDatabaseHas('exchange_rate_history', [
+            'old_buy' => '15700.00',
+            'old_sell' => '15800.00',
+            'new_buy' => '15750.00',
+            'new_sell' => '15850.00',
+            'changed_by' => $user->id,
+        ]);
+    }
+
+    public function test_update_rejects_invalid_payload(): void
+    {
+        $usd = Currency::create(['code' => 'USD']);
+
+        $response = $this->putJson("/api/exchange-rates/{$usd->id}", [
+            'rate_buy' => -1,
+            'rate_sell' => 15850,
+        ]);
+
+        $response->assertStatus(422);
+    }
 }

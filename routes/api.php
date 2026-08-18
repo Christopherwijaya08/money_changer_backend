@@ -21,3 +21,4 @@ Route::post('/customers', [CustomerController::class, 'store']);
 Route::get('/employees', [EmployeeController::class, 'index']);
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);

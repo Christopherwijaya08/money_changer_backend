@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['exchange_rate_id', 'old_buy', 'old_sell', 'new_buy', 'new_sell', 'changed_by'])]
 class ExchangeRateHistory extends Model
 {
+    protected $table = 'exchange_rate_history';
+
     const UPDATED_AT = null;
     const CREATED_AT = 'changed_at';
 

@@ -1,0 +1,44 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class SettingApiTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_show_returns_default_threshold_when_unset(): void
+    {
+        $response = $this->getJson('/api/settings/threshold');
+
+        $response->assertOk();
+        $response->assertJsonPath('data.review_threshold', '50000000.00');
+    }
+
+    public function test_update_changes_threshold(): void
+    {
+        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
+
+        $response = $this->putJson('/api/settings/threshold', [
+            'review_threshold' => 75000000,
+            'user_id' => $user->id,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.review_threshold', '75000000.00');
+        $response->assertJsonPath('data.updated_by', 'Admin');
+
+        $again = $this->getJson('/api/settings/threshold');
+        $again->assertJsonPath('data.review_threshold', '75000000.00');
+    }
+
+    public function test_update_rejects_invalid_payload(): void
+    {
+        $response = $this->putJson('/api/settings/threshold', ['review_threshold' => -5]);
+
+        $response->assertStatus(422);
+    }
+}

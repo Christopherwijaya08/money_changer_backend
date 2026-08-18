@@ -4,14 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Resources\TransactionResource;
+use App\Models\Setting;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    // ponytail: hardcoded until Master Nasabah's admin-configurable threshold setting lands
-    private const REVIEW_THRESHOLD = 50000000;
-
     public function index(Request $request)
     {
         $transactions = Transaction::query()
@@ -40,7 +38,7 @@ class TransactionController extends Controller
             ...$data,
             'transaction_number' => $this->generateTransactionNumber(),
             'total_amount' => $totalAmount,
-            'requires_review' => $totalAmount > self::REVIEW_THRESHOLD,
+            'requires_review' => $totalAmount > Setting::current()->review_threshold,
         ]);
 
         return new TransactionResource($transaction->load(['branch', 'currency', 'customer', 'employee', 'user']));

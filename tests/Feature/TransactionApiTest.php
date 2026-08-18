@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Employee;
+use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,6 +50,27 @@ class TransactionApiTest extends TestCase
         $response->assertJsonPath('data.requires_review', true);
         $this->assertEquals(63360000, $response->json('data.total_amount'));
         $this->assertStringStartsWith('TRX-', $response->json('data.transaction_number'));
+    }
+
+    public function test_store_flags_review_using_the_configured_threshold(): void
+    {
+        $r = $this->makeRelations();
+        Setting::current()->update(['review_threshold' => 5000000]);
+
+        $response = $this->postJson('/api/transactions', [
+            'type' => 'buy',
+            'currency_id' => $r['currency']->id,
+            'amount' => 400,
+            'rate_default' => 15750,
+            'rate_actual' => 15840,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response->assertCreated();
+        $this->assertEquals(6336000, $response->json('data.total_amount'));
+        $response->assertJsonPath('data.requires_review', true);
     }
 
     public function test_store_rejects_invalid_payload(): void

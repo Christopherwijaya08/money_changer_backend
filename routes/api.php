@@ -3,6 +3,7 @@
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExchangeRateController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,3 +30,6 @@ Route::get('/employees', [EmployeeController::class, 'index']);
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);
 Route::get('/exchange-rates/{currency}/history', [ExchangeRateController::class, 'history']);
+
+Route::get('/settings/threshold', [SettingController::class, 'show']);
+Route::put('/settings/threshold', [SettingController::class, 'update']);

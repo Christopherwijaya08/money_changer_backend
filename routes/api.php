@@ -20,6 +20,8 @@ Route::post('/customers', [CustomerController::class, 'store']);
 Route::get('/customers/{customer}', [CustomerController::class, 'show']);
 Route::put('/customers/{customer}', [CustomerController::class, 'update']);
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
+Route::post('/customers/{customer}/ktp-photo', [CustomerController::class, 'uploadKtpPhoto']);
+Route::get('/customers/{customer}/ktp-photo', [CustomerController::class, 'ktpPhoto']);
 
 Route::get('/employees', [EmployeeController::class, 'index']);
 

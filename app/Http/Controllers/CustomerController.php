@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CustomerController extends Controller
@@ -56,6 +57,29 @@ class CustomerController extends Controller
         $customer->delete();
 
         return response()->noContent();
+    }
+
+    public function uploadKtpPhoto(Request $request, Customer $customer)
+    {
+        $request->validate(['ktp_photo' => ['required', 'image', 'max:4096']]);
+
+        if ($customer->ktp_photo_path) {
+            Storage::disk('local')->delete($customer->ktp_photo_path);
+        }
+
+        $customer->update([
+            'ktp_photo_path' => $request->file('ktp_photo')->store('ktp-photos', 'local'),
+        ]);
+
+        return new CustomerResource($customer);
+    }
+
+    // ponytail: served from the private disk with no access check yet; restrict by role once Sanctum auth (Fase 5) lands
+    public function ktpPhoto(Customer $customer)
+    {
+        abort_unless($customer->ktp_photo_path, 404);
+
+        return Storage::disk('local')->response($customer->ktp_photo_path);
     }
 
     private function dataWithPhoto(StoreCustomerRequest $request): array

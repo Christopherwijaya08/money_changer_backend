@@ -99,4 +99,59 @@ class CustomerApiTest extends TestCase
         $response->assertNoContent();
         $this->assertModelMissing($customer);
     }
+
+    public function test_upload_ktp_photo_stores_file_and_replaces_previous(): void
+    {
+        Storage::fake('local');
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+
+        $first = $this->postJson("/api/customers/{$customer->id}/ktp-photo", [
+            'ktp_photo' => UploadedFile::fake()->create('ktp.jpg', 100, 'image/jpeg'),
+        ]);
+        $first->assertOk();
+        $first->assertJsonPath('data.has_ktp_photo', true);
+        $firstPath = $customer->fresh()->ktp_photo_path;
+        Storage::disk('local')->assertExists($firstPath);
+
+        $second = $this->postJson("/api/customers/{$customer->id}/ktp-photo", [
+            'ktp_photo' => UploadedFile::fake()->create('ktp-baru.jpg', 100, 'image/jpeg'),
+        ]);
+        $second->assertOk();
+        Storage::disk('local')->assertMissing($firstPath);
+        Storage::disk('local')->assertExists($customer->fresh()->ktp_photo_path);
+    }
+
+    public function test_upload_ktp_photo_rejects_non_image(): void
+    {
+        Storage::fake('local');
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+
+        $response = $this->postJson("/api/customers/{$customer->id}/ktp-photo", [
+            'ktp_photo' => UploadedFile::fake()->create('ktp.pdf', 100, 'application/pdf'),
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
+    public function test_ktp_photo_returns_the_stored_file(): void
+    {
+        Storage::fake('local');
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+        $this->postJson("/api/customers/{$customer->id}/ktp-photo", [
+            'ktp_photo' => UploadedFile::fake()->create('ktp.jpg', 100, 'image/jpeg'),
+        ]);
+
+        $response = $this->get("/api/customers/{$customer->id}/ktp-photo");
+
+        $response->assertOk();
+    }
+
+    public function test_ktp_photo_returns_404_when_customer_has_none(): void
+    {
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+
+        $response = $this->get("/api/customers/{$customer->id}/ktp-photo");
+
+        $response->assertNotFound();
+    }
 }

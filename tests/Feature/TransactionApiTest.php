@@ -120,6 +120,45 @@ class TransactionApiTest extends TestCase
         $response->assertJsonPath('data.0.id', $matching->id);
     }
 
+    public function test_index_filters_by_requires_review(): void
+    {
+        $r = $this->makeRelations();
+
+        $needsReview = Transaction::create([
+            'transaction_number' => 'TRX-20260816-001',
+            'type' => 'buy',
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 7890000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+            'requires_review' => true,
+        ]);
+
+        Transaction::create([
+            'transaction_number' => 'TRX-20260816-002',
+            'type' => 'sell',
+            'currency_id' => $r['currency']->id,
+            'amount' => 200,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 3156000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+            'requires_review' => false,
+        ]);
+
+        $response = $this->getJson('/api/transactions?requires_review=1');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $needsReview->id);
+    }
+
     public function test_index_filters_by_branch(): void
     {
         $r = $this->makeRelations();

@@ -19,6 +19,7 @@ class TransactionController extends Controller
             ->when($request->query('currency_id'), fn ($q, $id) => $q->where('currency_id', $id))
             ->when($request->query('customer_id'), fn ($q, $id) => $q->where('customer_id', $id))
             ->when($request->query('date'), fn ($q, $date) => $q->whereDate('created_at', $date))
+            ->when($request->has('requires_review'), fn ($q) => $q->where('requires_review', $request->boolean('requires_review')))
             ->latest()
             ->paginate($request->integer('per_page', 15));
 

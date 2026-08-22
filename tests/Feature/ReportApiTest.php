@@ -129,4 +129,66 @@ class ReportApiTest extends TestCase
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('data.0.id', $inRange->id);
     }
+
+    public function test_employee_performance_aggregates_per_employee_scoped_to_branch_and_period(): void
+    {
+        $r = $this->makeRelations();
+        $otherBranch = Branch::create(['name' => 'Cabang Surabaya']);
+        $otherEmployee = Employee::create(['name' => 'Eko', 'position' => 'Teller', 'branch_id' => $otherBranch->id]);
+        $r['employee']->update(['branch_id' => $r['branch']->id]);
+
+        Transaction::create([
+            'transaction_number' => 'TRX-1',
+            'type' => 'buy',
+            'branch_id' => $r['branch']->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15800,
+            'rate_actual' => 15750,
+            'total_amount' => 7875000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ])->forceFill(['created_at' => '2026-08-16 10:00:00'])->save();
+
+        Transaction::create([
+            'transaction_number' => 'TRX-2',
+            'type' => 'sell',
+            'branch_id' => $r['branch']->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 300,
+            'rate_default' => 15850,
+            'rate_actual' => 15830,
+            'total_amount' => 4749000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ])->forceFill(['created_at' => '2026-08-10 09:00:00'])->save();
+
+        // Belongs to a different branch's employee entirely; must not leak in.
+        Transaction::create([
+            'transaction_number' => 'TRX-3',
+            'type' => 'buy',
+            'branch_id' => $otherBranch->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 999,
+            'rate_default' => 15800,
+            'rate_actual' => 15750,
+            'total_amount' => 15784200,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $otherEmployee->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->getJson(
+            "/api/reports/employee-performance?branch_id={$r['branch']->id}&date_from=2026-08-16&date_to=2026-08-16"
+        );
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.employee_name', 'Dewi');
+        $response->assertJsonPath('data.0.transaction_count', 1);
+        $response->assertJsonPath('data.0.total_omzet', 7875000);
+        $response->assertJsonPath('data.0.total_margin', 25000);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Branch;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Employee;
@@ -117,6 +118,47 @@ class TransactionApiTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('data.0.id', $matching->id);
+    }
+
+    public function test_index_filters_by_branch(): void
+    {
+        $r = $this->makeRelations();
+        $jakarta = Branch::create(['name' => 'Cabang Jakarta']);
+        $surabaya = Branch::create(['name' => 'Cabang Surabaya']);
+
+        $jakartaTransaction = Transaction::create([
+            'transaction_number' => 'TRX-20260816-001',
+            'type' => 'buy',
+            'branch_id' => $jakarta->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 7890000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        Transaction::create([
+            'transaction_number' => 'TRX-20260816-002',
+            'type' => 'sell',
+            'branch_id' => $surabaya->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 2000,
+            'rate_default' => 11600,
+            'rate_actual' => 11730,
+            'total_amount' => 23460000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->getJson('/api/transactions?branch_id='.$jakarta->id);
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $jakartaTransaction->id);
     }
 
     public function test_show_returns_transaction_detail_for_nota(): void

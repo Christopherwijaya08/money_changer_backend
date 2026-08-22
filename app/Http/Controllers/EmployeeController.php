@@ -5,12 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
+use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::with('branch')->where('is_active', true)->orderBy('name')->get();
+        $employees = Employee::with('branch')
+            ->where('is_active', true)
+            ->when($request->query('branch_id'), fn ($q, $id) => $q->where('branch_id', $id))
+            ->orderBy('name')
+            ->get();
 
         return EmployeeResource::collection($employees);
     }

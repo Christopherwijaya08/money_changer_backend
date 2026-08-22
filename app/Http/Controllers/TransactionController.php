@@ -14,6 +14,7 @@ class TransactionController extends Controller
     {
         $transactions = Transaction::query()
             ->with(['branch', 'currency', 'customer', 'employee', 'user'])
+            ->when($request->query('branch_id'), fn ($q, $id) => $q->where('branch_id', $id))
             ->when($request->query('employee_id'), fn ($q, $id) => $q->where('employee_id', $id))
             ->when($request->query('currency_id'), fn ($q, $id) => $q->where('currency_id', $id))
             ->when($request->query('customer_id'), fn ($q, $id) => $q->where('customer_id', $id))

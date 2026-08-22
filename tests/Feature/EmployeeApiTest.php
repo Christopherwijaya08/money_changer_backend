@@ -34,6 +34,21 @@ class EmployeeApiTest extends TestCase
         $response->assertJsonPath('data.1.name', 'Fajar Nugroho');
     }
 
+    public function test_index_filters_by_branch(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $jakarta = Branch::create(['name' => 'Cabang Jakarta']);
+        $surabaya = Branch::create(['name' => 'Cabang Surabaya']);
+        Employee::create(['name' => 'Dewi Anggraini', 'is_active' => true, 'branch_id' => $jakarta->id]);
+        Employee::create(['name' => 'Eko Prasetyo', 'is_active' => true, 'branch_id' => $surabaya->id]);
+
+        $response = $this->getJson('/api/employees?branch_id='.$jakarta->id);
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.name', 'Dewi Anggraini');
+    }
+
     public function test_store_creates_employee(): void
     {
         Sanctum::actingAs(User::factory()->create());

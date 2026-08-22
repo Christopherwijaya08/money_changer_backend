@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExchangeRateController;
@@ -37,3 +38,9 @@ Route::get('/exchange-rates/{currency}/history', [ExchangeRateController::class,
 
 Route::get('/settings/threshold', [SettingController::class, 'show']);
 Route::put('/settings/threshold', [SettingController::class, 'update']);
+
+Route::get('/branches', [BranchController::class, 'index']);
+Route::post('/branches', [BranchController::class, 'store']);
+Route::get('/branches/{branch}', [BranchController::class, 'show']);
+Route::put('/branches/{branch}', [BranchController::class, 'update']);
+Route::delete('/branches/{branch}', [BranchController::class, 'destroy']);

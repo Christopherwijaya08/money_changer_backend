@@ -3,6 +3,7 @@
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CashBalanceController;
 use App\Http\Controllers\CashDepositController;
+use App\Http\Controllers\CashReconciliationController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
@@ -58,3 +59,6 @@ Route::get('/cash-deposits', [CashDepositController::class, 'index']);
 Route::post('/cash-deposits', [CashDepositController::class, 'store']);
 
 Route::get('/cash-balances', [CashBalanceController::class, 'index']);
+
+Route::get('/cash-reconciliations', [CashReconciliationController::class, 'index']);
+Route::post('/cash-reconciliations', [CashReconciliationController::class, 'store']);

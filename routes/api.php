@@ -65,4 +65,6 @@ Route::get('/cash-reconciliations', [CashReconciliationController::class, 'index
 Route::post('/cash-reconciliations', [CashReconciliationController::class, 'store']);
 
 Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
+Route::get('/reports/profit-loss/export', [ReportController::class, 'profitLossExport']);
 Route::get('/reports/employee-performance', [ReportController::class, 'employeePerformance']);
+Route::get('/reports/employee-performance/export', [ReportController::class, 'employeePerformanceExport']);

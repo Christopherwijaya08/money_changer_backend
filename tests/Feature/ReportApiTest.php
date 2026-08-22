@@ -191,4 +191,82 @@ class ReportApiTest extends TestCase
         $response->assertJsonPath('data.0.total_omzet', 7875000);
         $response->assertJsonPath('data.0.total_margin', 25000);
     }
+
+    public function test_profit_loss_export_csv_contains_the_filtered_rows(): void
+    {
+        $r = $this->makeRelations();
+
+        Transaction::create([
+            'transaction_number' => 'TRX-1',
+            'type' => 'buy',
+            'branch_id' => $r['branch']->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15800,
+            'rate_actual' => 15750,
+            'total_amount' => 7875000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->get("/api/reports/profit-loss/export?branch_id={$r['branch']->id}");
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $content = $response->streamedContent();
+        $this->assertStringContainsString('TRX-1', $content);
+        $this->assertStringContainsString('No. Transaksi', $content);
+    }
+
+    public function test_profit_loss_export_pdf_returns_a_pdf_file(): void
+    {
+        $r = $this->makeRelations();
+
+        Transaction::create([
+            'transaction_number' => 'TRX-1',
+            'type' => 'buy',
+            'branch_id' => $r['branch']->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15800,
+            'rate_actual' => 15750,
+            'total_amount' => 7875000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->get("/api/reports/profit-loss/export?branch_id={$r['branch']->id}&format=pdf");
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', $response->getContent());
+    }
+
+    public function test_employee_performance_export_csv_contains_the_rows(): void
+    {
+        $r = $this->makeRelations();
+        $r['employee']->update(['branch_id' => $r['branch']->id]);
+
+        Transaction::create([
+            'transaction_number' => 'TRX-1',
+            'type' => 'buy',
+            'branch_id' => $r['branch']->id,
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15800,
+            'rate_actual' => 15750,
+            'total_amount' => 7875000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->get("/api/reports/employee-performance/export?branch_id={$r['branch']->id}");
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $this->assertStringContainsString('Dewi', $response->streamedContent());
+    }
 }

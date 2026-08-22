@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CashDepositController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
@@ -51,3 +52,6 @@ Route::post('/currencies', [CurrencyController::class, 'store']);
 Route::get('/currencies/{currency}', [CurrencyController::class, 'show']);
 Route::put('/currencies/{currency}', [CurrencyController::class, 'update']);
 Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy']);
+
+Route::get('/cash-deposits', [CashDepositController::class, 'index']);
+Route::post('/cash-deposits', [CashDepositController::class, 'store']);

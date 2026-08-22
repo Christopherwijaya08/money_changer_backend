@@ -9,17 +9,20 @@ use Illuminate\Support\Facades\DB;
 class CurrencySeeder extends Seeder
 {
     private const RATES = [
-        'USD' => ['buy' => 15750, 'sell' => 15850],
-        'SGD' => ['buy' => 11600, 'sell' => 11750],
-        'EUR' => ['buy' => 16900, 'sell' => 17100],
-        'JPY' => ['buy' => 103, 'sell' => 106],
-        'AUD' => ['buy' => 10200, 'sell' => 10400],
+        'USD' => ['name' => 'Dolar Amerika Serikat', 'buy' => 15750, 'sell' => 15850, 'is_active' => true],
+        'SGD' => ['name' => 'Dolar Singapura', 'buy' => 11600, 'sell' => 11750, 'is_active' => true],
+        'EUR' => ['name' => 'Euro', 'buy' => 16900, 'sell' => 17100, 'is_active' => true],
+        'JPY' => ['name' => 'Yen Jepang', 'buy' => 103, 'sell' => 106, 'is_active' => true],
+        'AUD' => ['name' => 'Dolar Australia', 'buy' => 10200, 'sell' => 10400, 'is_active' => false],
     ];
 
     public function run(): void
     {
         foreach (self::RATES as $code => $rate) {
-            $currency = Currency::firstOrCreate(['code' => $code]);
+            $currency = Currency::firstOrCreate(
+                ['code' => $code],
+                ['name' => $rate['name'], 'is_active' => $rate['is_active']]
+            );
 
             DB::table('exchange_rates')->insert([
                 'currency_id' => $currency->id,

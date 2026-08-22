@@ -7,9 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['code'])]
+#[Fillable(['code', 'name', 'is_active'])]
 class Currency extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);

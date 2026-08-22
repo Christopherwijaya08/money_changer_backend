@@ -6,6 +6,7 @@ use App\Http\Controllers\CashDepositController;
 use App\Http\Controllers\CashReconciliationController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\ReportController;
@@ -68,3 +69,5 @@ Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
 Route::get('/reports/profit-loss/export', [ReportController::class, 'profitLossExport']);
 Route::get('/reports/employee-performance', [ReportController::class, 'employeePerformance']);
 Route::get('/reports/employee-performance/export', [ReportController::class, 'employeePerformanceExport']);
+
+Route::get('/dashboard/summary', [DashboardController::class, 'summary']);

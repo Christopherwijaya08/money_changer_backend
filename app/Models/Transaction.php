@@ -58,4 +58,14 @@ class Transaction extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // Margin tracking: gap between the standing rate and what was actually
+    // negotiated. Buying cheaper than default, or selling pricier than
+    // default, is profit; the other direction is a cost of the negotiation.
+    public function margin(): float
+    {
+        return $this->type === 'buy'
+            ? ($this->rate_default - $this->rate_actual) * $this->amount
+            : ($this->rate_actual - $this->rate_default) * $this->amount;
+    }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExchangeRateController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
@@ -62,3 +63,5 @@ Route::get('/cash-balances', [CashBalanceController::class, 'index']);
 
 Route::get('/cash-reconciliations', [CashReconciliationController::class, 'index']);
 Route::post('/cash-reconciliations', [CashReconciliationController::class, 'store']);
+
+Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);

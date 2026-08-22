@@ -25,9 +25,11 @@ Route::post('/customers/{customer}/ktp-photo', [CustomerController::class, 'uplo
 Route::get('/customers/{customer}/ktp-photo', [CustomerController::class, 'ktpPhoto']);
 Route::get('/customers/{customer}/transactions', [CustomerController::class, 'transactions']);
 
-Route::get('/employees', [EmployeeController::class, 'index']);
-Route::post('/employees', [EmployeeController::class, 'store']);
-Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::post('/employees', [EmployeeController::class, 'store']);
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
+});
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);

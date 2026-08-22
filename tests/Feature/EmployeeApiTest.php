@@ -4,15 +4,24 @@ namespace Tests\Feature;
 
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class EmployeeApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_unauthenticated_requests_are_rejected(): void
+    {
+        $this->getJson('/api/employees')->assertUnauthorized();
+    }
+
     public function test_index_only_returns_active_employees_sorted_by_name(): void
     {
+        Sanctum::actingAs(User::factory()->create());
+
         Employee::create(['name' => 'Fajar Nugroho', 'position' => 'Supervisor', 'is_active' => true]);
         Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
         Employee::create(['name' => 'Guntur Saputra', 'position' => 'Teller', 'is_active' => false]);
@@ -27,6 +36,7 @@ class EmployeeApiTest extends TestCase
 
     public function test_store_creates_employee(): void
     {
+        Sanctum::actingAs(User::factory()->create());
         $branch = Branch::create(['name' => 'Cabang Pusat - Jakarta']);
 
         $response = $this->postJson('/api/employees', [
@@ -43,6 +53,8 @@ class EmployeeApiTest extends TestCase
 
     public function test_store_rejects_missing_name(): void
     {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->postJson('/api/employees', ['position' => 'Teller']);
 
         $response->assertUnprocessable();
@@ -51,6 +63,7 @@ class EmployeeApiTest extends TestCase
 
     public function test_update_changes_employee_fields(): void
     {
+        Sanctum::actingAs(User::factory()->create());
         $employee = Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
 
         $response = $this->putJson("/api/employees/{$employee->id}", [
@@ -67,6 +80,7 @@ class EmployeeApiTest extends TestCase
 
     public function test_update_without_is_active_leaves_status_untouched(): void
     {
+        Sanctum::actingAs(User::factory()->create());
         $employee = Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
 
         $response = $this->putJson("/api/employees/{$employee->id}", [

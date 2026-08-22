@@ -71,3 +71,4 @@ Route::get('/reports/employee-performance', [ReportController::class, 'employeeP
 Route::get('/reports/employee-performance/export', [ReportController::class, 'employeePerformanceExport']);
 
 Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+Route::get('/dashboard/trend', [DashboardController::class, 'trend']);

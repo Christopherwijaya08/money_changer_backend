@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExchangeRateController;
@@ -44,3 +45,9 @@ Route::post('/branches', [BranchController::class, 'store']);
 Route::get('/branches/{branch}', [BranchController::class, 'show']);
 Route::put('/branches/{branch}', [BranchController::class, 'update']);
 Route::delete('/branches/{branch}', [BranchController::class, 'destroy']);
+
+Route::get('/currencies', [CurrencyController::class, 'index']);
+Route::post('/currencies', [CurrencyController::class, 'store']);
+Route::get('/currencies/{currency}', [CurrencyController::class, 'show']);
+Route::put('/currencies/{currency}', [CurrencyController::class, 'update']);
+Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy']);

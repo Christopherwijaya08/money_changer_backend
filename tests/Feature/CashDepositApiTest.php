@@ -23,7 +23,6 @@ class CashDepositApiTest extends TestCase
             'branch_id' => $branch->id,
             'currency_id' => $currency->id,
             'amount' => 20000,
-            'rate' => 15750,
             'note' => 'Modal awal dari Owner',
             'user_id' => $user->id,
         ]);
@@ -40,7 +39,7 @@ class CashDepositApiTest extends TestCase
         $response = $this->postJson('/api/cash-deposits', ['amount' => -5]);
 
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['currency_id', 'amount', 'rate', 'user_id']);
+        $response->assertJsonValidationErrors(['currency_id', 'amount', 'user_id']);
     }
 
     public function test_index_lists_and_filters_by_branch_and_currency(): void
@@ -55,7 +54,6 @@ class CashDepositApiTest extends TestCase
             'branch_id' => $jakarta->id,
             'currency_id' => $usd->id,
             'amount' => 20000,
-            'rate' => 15750,
             'created_by' => $user->id,
         ]);
 
@@ -63,7 +61,6 @@ class CashDepositApiTest extends TestCase
             'branch_id' => $jakarta->id,
             'currency_id' => $sgd->id,
             'amount' => 15000,
-            'rate' => 11600,
             'created_by' => $user->id,
         ]);
 
@@ -71,7 +68,6 @@ class CashDepositApiTest extends TestCase
             'branch_id' => $surabaya->id,
             'currency_id' => $usd->id,
             'amount' => 10000,
-            'rate' => 15700,
             'created_by' => $user->id,
         ]);
 

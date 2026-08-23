@@ -16,7 +16,6 @@ class CashDepositResource extends JsonResource
             'currency_id' => $this->currency_id,
             'currency_code' => $this->currency?->code,
             'amount' => $this->amount,
-            'rate' => $this->rate,
             'note' => $this->note,
             'created_by' => $this->createdBy?->name,
             'created_at' => $this->created_at,

@@ -38,7 +38,6 @@ class CashReconciliationApiTest extends TestCase
             'branch_id' => $r['branch']->id,
             'currency_id' => $r['currency']->id,
             'amount' => 10000,
-            'rate' => 15750,
             'created_by' => $r['user']->id,
         ])->forceFill(['created_at' => '2026-08-15 09:00:00'])->save();
 
@@ -90,7 +89,6 @@ class CashReconciliationApiTest extends TestCase
             'branch_id' => $r['branch']->id,
             'currency_id' => $r['currency']->id,
             'amount' => 10000,
-            'rate' => 15750,
             'created_by' => $r['user']->id,
         ])->forceFill(['created_at' => '2026-08-16 09:00:00'])->save();
 

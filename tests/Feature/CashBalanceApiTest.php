@@ -29,7 +29,6 @@ class CashBalanceApiTest extends TestCase
             'branch_id' => $jakarta->id,
             'currency_id' => $usd->id,
             'amount' => 20000,
-            'rate' => 15750,
             'created_by' => $user->id,
         ]);
 

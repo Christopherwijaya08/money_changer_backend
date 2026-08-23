@@ -13,7 +13,6 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('currency_id')->constrained();
             $table->decimal('amount', 15, 2);
-            $table->decimal('rate', 15, 2);
             $table->text('note')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

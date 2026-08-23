@@ -85,13 +85,14 @@ class ExchangeRateApiTest extends TestCase
     {
         $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
         $usd = Currency::create(['code' => 'USD']);
-        ExchangeRate::create([
+        $rate = ExchangeRate::create([
             'currency_id' => $usd->id,
             'rate_buy' => 15700,
             'rate_sell' => 15800,
             'effective_date' => now()->toDateString(),
             'created_by' => $user->id,
         ]);
+        $rate->forceFill(['created_at' => now()->subDay()])->save();
 
         $response = $this->putJson("/api/exchange-rates/{$usd->id}", [
             'rate_buy' => 15750,
@@ -101,6 +102,8 @@ class ExchangeRateApiTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('data.rate_buy', '15750.00');
+        // "updated_at" must reflect the edit, not the original seed/creation time.
+        $this->assertNotEquals($rate->created_at->toJSON(), $response->json('data.updated_at'));
         $this->assertDatabaseCount('exchange_rates', 1);
         $this->assertDatabaseHas('exchange_rate_history', [
             'old_buy' => '15700.00',

@@ -20,7 +20,7 @@ class ExchangeRateResource extends JsonResource
             'rate_buy' => $latestRate?->rate_buy,
             'rate_sell' => $latestRate?->rate_sell,
             'effective_date' => $latestRate?->effective_date,
-            'updated_at' => $latestRate?->created_at,
+            'updated_at' => $latestRate?->updated_at,
             'updated_by' => $latestRate?->createdBy?->name,
         ];
     }

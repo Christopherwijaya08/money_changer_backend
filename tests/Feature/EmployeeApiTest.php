@@ -13,9 +13,16 @@ class EmployeeApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_unauthenticated_requests_are_rejected(): void
+    public function test_unauthenticated_store_is_rejected(): void
     {
-        $this->getJson('/api/employees')->assertUnauthorized();
+        $this->postJson('/api/employees', ['name' => 'Hendra Wijaya'])->assertUnauthorized();
+    }
+
+    public function test_index_does_not_require_authentication(): void
+    {
+        Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
+
+        $this->getJson('/api/employees')->assertOk();
     }
 
     public function test_index_only_returns_active_employees_sorted_by_name(): void

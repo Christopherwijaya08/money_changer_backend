@@ -240,4 +240,65 @@ class TransactionApiTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    public function test_update_changes_amount_and_rate_and_logs_the_diff(): void
+    {
+        $r = $this->makeRelations();
+        $transaction = Transaction::create([
+            'transaction_number' => 'TRX-20260816-001',
+            'type' => 'buy',
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 7890000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->putJson("/api/transactions/{$transaction->id}", [
+            'type' => 'buy',
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15750,
+            'rate_actual' => 15800,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.rate_actual', '15800.00');
+        $this->assertEquals(7900000, $transaction->fresh()->total_amount);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'transaction_edit',
+            'description' => 'TRX-20260816-001: kurs aktual 15.780 → 15.800',
+        ]);
+    }
+
+    public function test_destroy_deletes_transaction_and_logs_it(): void
+    {
+        $r = $this->makeRelations();
+        $transaction = Transaction::create([
+            'transaction_number' => 'TRX-20260816-001',
+            'type' => 'buy',
+            'currency_id' => $r['currency']->id,
+            'amount' => 500,
+            'rate_default' => 15750,
+            'rate_actual' => 15780,
+            'total_amount' => 7890000,
+            'customer_id' => $r['customer']->id,
+            'employee_id' => $r['employee']->id,
+            'user_id' => $r['user']->id,
+        ]);
+
+        $response = $this->deleteJson("/api/transactions/{$transaction->id}");
+
+        $response->assertNoContent();
+        $this->assertModelMissing($transaction);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'transaction_delete',
+            'description' => 'TRX-20260816-001 dihapus',
+        ]);
+    }
 }

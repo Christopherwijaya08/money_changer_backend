@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Resources\TransactionResource;
+use App\Models\AuditLog;
 use App\Models\Setting;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -45,6 +46,49 @@ class TransactionController extends Controller
         ]);
 
         return new TransactionResource($transaction->load(['branch', 'currency', 'customer', 'employee', 'user']));
+    }
+
+    public function update(StoreTransactionRequest $request, Transaction $transaction)
+    {
+        $data = $request->validated();
+        $before = $transaction->only(['amount', 'rate_actual']);
+        $totalAmount = $data['amount'] * $data['rate_actual'];
+
+        $transaction->update([
+            ...$data,
+            'total_amount' => $totalAmount,
+            'requires_review' => $totalAmount > Setting::current()->review_threshold,
+        ]);
+
+        $changes = [];
+        if ((float) $before['amount'] !== (float) $data['amount']) {
+            $changes[] = sprintf(
+                'nominal %s → %s',
+                number_format($before['amount'], 0, ',', '.'),
+                number_format($data['amount'], 0, ',', '.'),
+            );
+        }
+        if ((float) $before['rate_actual'] !== (float) $data['rate_actual']) {
+            $changes[] = sprintf(
+                'kurs aktual %s → %s',
+                number_format($before['rate_actual'], 0, ',', '.'),
+                number_format($data['rate_actual'], 0, ',', '.'),
+            );
+        }
+        $description = $transaction->transaction_number.': '.($changes ? implode(', ', $changes) : 'data diperbarui');
+
+        AuditLog::record($request->user()->id, 'transaction_edit', $description);
+
+        return new TransactionResource($transaction->load(['branch', 'currency', 'customer', 'employee', 'user']));
+    }
+
+    public function destroy(Request $request, Transaction $transaction)
+    {
+        AuditLog::record($request->user()->id, 'transaction_delete', "{$transaction->transaction_number} dihapus");
+
+        $transaction->delete();
+
+        return response()->noContent();
     }
 
     private function generateTransactionNumber(): string

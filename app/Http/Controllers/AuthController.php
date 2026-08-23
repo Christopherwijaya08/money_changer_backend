@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,8 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('web')->plainTextToken;
+
+        AuditLog::record($user->id, 'login', 'Login berhasil');
 
         return response()->json([
             'token' => $token,

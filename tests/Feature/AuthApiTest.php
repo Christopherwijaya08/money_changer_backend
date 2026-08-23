@@ -33,6 +33,7 @@ class AuthApiTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('user.role', 'admin');
         $this->assertNotEmpty($response->json('token'));
+        $this->assertDatabaseHas('audit_logs', ['action' => 'login']);
     }
 
     public function test_login_rejects_wrong_password(): void
@@ -46,6 +47,7 @@ class AuthApiTest extends TestCase
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['email']);
+        $this->assertDatabaseCount('audit_logs', 0);
     }
 
     public function test_login_rejects_inactive_account(): void

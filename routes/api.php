@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CashBalanceController;
@@ -26,6 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/users', [AdminUserController::class, 'index']);
     Route::post('/admin/users', [AdminUserController::class, 'store']);
     Route::put('/admin/users/{user}', [AdminUserController::class, 'update']);
+
+    Route::get('/audit-logs', [AuditLogController::class, 'index']);
 
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);

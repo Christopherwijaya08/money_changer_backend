@@ -75,9 +75,9 @@ class CustomerController extends Controller
         return new CustomerResource($customer);
     }
 
-    // ponytail: served from the private disk with no access check yet; restrict by role once Sanctum auth (Fase 5) lands
-    public function ktpPhoto(Customer $customer)
+    public function ktpPhoto(Request $request, Customer $customer)
     {
+        abort_unless($request->user()->role === 'owner', 403);
         abort_unless($customer->ktp_photo_path, 404);
 
         return Storage::disk('local')->response($customer->ktp_photo_path);

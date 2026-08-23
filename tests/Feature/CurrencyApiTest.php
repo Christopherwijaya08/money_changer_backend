@@ -8,11 +8,18 @@ use App\Models\Employee;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class CurrencyApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_index_lists_currencies_sorted_by_code(): void
     {

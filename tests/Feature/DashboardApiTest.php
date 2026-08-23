@@ -9,11 +9,18 @@ use App\Models\Employee;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class DashboardApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_summary_computes_omzet_and_transaction_count_for_the_date_and_branch(): void
     {

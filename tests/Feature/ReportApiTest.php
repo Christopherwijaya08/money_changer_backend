@@ -9,11 +9,18 @@ use App\Models\Employee;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ReportApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     private function makeRelations(): array
     {

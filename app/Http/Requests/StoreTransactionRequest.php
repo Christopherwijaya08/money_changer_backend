@@ -22,8 +22,6 @@ class StoreTransactionRequest extends FormRequest
             'rate_actual' => ['required', 'numeric', 'gt:0'],
             'customer_id' => ['required', 'exists:customers,id'],
             'employee_id' => ['required', 'exists:employees,id'],
-            // ponytail: client-supplied until Sanctum auth (Fase 5) lands, then read from $request->user() instead
-            'user_id' => ['required', 'exists:users,id'],
             'note' => ['nullable', 'string'],
         ];
     }

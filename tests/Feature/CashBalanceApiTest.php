@@ -10,11 +10,18 @@ use App\Models\Employee;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class CashBalanceApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_index_computes_balance_from_deposits_and_transactions_scoped_to_branch(): void
     {

@@ -25,8 +25,7 @@ class CashDepositController extends Controller
     public function store(StoreCashDepositRequest $request)
     {
         $data = $request->validated();
-        $data['created_by'] = $data['user_id'];
-        unset($data['user_id']);
+        $data['created_by'] = $request->user()->id;
 
         $deposit = CashDeposit::create($data);
 

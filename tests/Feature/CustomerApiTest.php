@@ -10,11 +10,19 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class CustomerApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // owner: the ktp-photo endpoint is owner-only, and nothing else here cares about role.
+        Sanctum::actingAs(User::factory()->create(['role' => 'owner']));
+    }
 
     public function test_store_creates_customer_with_ktp_photo(): void
     {
@@ -157,6 +165,20 @@ class CustomerApiTest extends TestCase
         $response = $this->get("/api/customers/{$customer->id}/ktp-photo");
 
         $response->assertNotFound();
+    }
+
+    public function test_ktp_photo_rejects_admin_role(): void
+    {
+        Storage::fake('local');
+        $customer = Customer::create(['name' => 'Andi Wijaya', 'identity_number' => '3171234567890001', 'phone' => '081234567890']);
+        $this->postJson("/api/customers/{$customer->id}/ktp-photo", [
+            'ktp_photo' => UploadedFile::fake()->create('ktp.jpg', 100, 'image/jpeg'),
+        ]);
+
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']));
+        $response = $this->get("/api/customers/{$customer->id}/ktp-photo");
+
+        $response->assertForbidden();
     }
 
     public function test_transactions_lists_only_that_customers_history(): void

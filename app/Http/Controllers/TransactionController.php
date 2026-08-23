@@ -38,6 +38,7 @@ class TransactionController extends Controller
 
         $transaction = Transaction::create([
             ...$data,
+            'user_id' => $request->user()->id,
             'transaction_number' => $this->generateTransactionNumber(),
             'total_amount' => $totalAmount,
             'requires_review' => $totalAmount > Setting::current()->review_threshold,

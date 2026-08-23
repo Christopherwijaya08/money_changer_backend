@@ -27,7 +27,7 @@ class ExchangeRateController extends Controller
         $attributes = [
             'rate_buy' => $data['rate_buy'],
             'rate_sell' => $data['rate_sell'],
-            'created_by' => $data['user_id'],
+            'created_by' => $request->user()->id,
         ];
 
         if ($rate) {
@@ -46,7 +46,7 @@ class ExchangeRateController extends Controller
                 'old_sell' => $previous->rate_sell,
                 'new_buy' => $data['rate_buy'],
                 'new_sell' => $data['rate_sell'],
-                'changed_by' => $data['user_id'],
+                'changed_by' => $request->user()->id,
             ]);
         }
 

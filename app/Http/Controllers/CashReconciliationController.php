@@ -52,7 +52,7 @@ class CashReconciliationController extends Controller
             ...$computed,
             'physical_balance' => $data['physical_balance'],
             'difference' => $difference,
-            'created_by' => $data['user_id'],
+            'created_by' => $request->user()->id,
         ];
 
         $reconciliation = CashReconciliation::where('currency_id', $data['currency_id'])

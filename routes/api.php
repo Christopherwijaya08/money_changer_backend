@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CashBalanceController;
 use App\Http\Controllers\CashDepositController;
@@ -12,63 +14,68 @@ use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TransactionController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/transactions', [TransactionController::class, 'index']);
-Route::post('/transactions', [TransactionController::class, 'store']);
-Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/change-password', [AuthController::class, 'changePassword']);
 
-Route::get('/customers', [CustomerController::class, 'index']);
-Route::post('/customers', [CustomerController::class, 'store']);
-Route::get('/customers/{customer}', [CustomerController::class, 'show']);
-Route::put('/customers/{customer}', [CustomerController::class, 'update']);
-Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
-Route::post('/customers/{customer}/ktp-photo', [CustomerController::class, 'uploadKtpPhoto']);
-Route::get('/customers/{customer}/ktp-photo', [CustomerController::class, 'ktpPhoto']);
-Route::get('/customers/{customer}/transactions', [CustomerController::class, 'transactions']);
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::post('/admin/users', [AdminUserController::class, 'store']);
+    Route::put('/admin/users/{user}', [AdminUserController::class, 'update']);
 
-// ponytail: fully public until Sanctum login (Fase 5) is real — same interim
-// stance as transactions/cash/settings (client-supplied fields, no token yet).
-Route::get('/employees', [EmployeeController::class, 'index']);
-Route::post('/employees', [EmployeeController::class, 'store']);
-Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::post('/transactions', [TransactionController::class, 'store']);
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);
 
-Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
-Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);
-Route::get('/exchange-rates/{currency}/history', [ExchangeRateController::class, 'history']);
+    Route::get('/customers', [CustomerController::class, 'index']);
+    Route::post('/customers', [CustomerController::class, 'store']);
+    Route::get('/customers/{customer}', [CustomerController::class, 'show']);
+    Route::put('/customers/{customer}', [CustomerController::class, 'update']);
+    Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
+    Route::post('/customers/{customer}/ktp-photo', [CustomerController::class, 'uploadKtpPhoto']);
+    Route::get('/customers/{customer}/ktp-photo', [CustomerController::class, 'ktpPhoto']);
+    Route::get('/customers/{customer}/transactions', [CustomerController::class, 'transactions']);
 
-Route::get('/settings/threshold', [SettingController::class, 'show']);
-Route::put('/settings/threshold', [SettingController::class, 'update']);
+    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::post('/employees', [EmployeeController::class, 'store']);
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
 
-Route::get('/branches', [BranchController::class, 'index']);
-Route::post('/branches', [BranchController::class, 'store']);
-Route::get('/branches/{branch}', [BranchController::class, 'show']);
-Route::put('/branches/{branch}', [BranchController::class, 'update']);
-Route::delete('/branches/{branch}', [BranchController::class, 'destroy']);
+    Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+    Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);
+    Route::get('/exchange-rates/{currency}/history', [ExchangeRateController::class, 'history']);
 
-Route::get('/currencies', [CurrencyController::class, 'index']);
-Route::post('/currencies', [CurrencyController::class, 'store']);
-Route::get('/currencies/{currency}', [CurrencyController::class, 'show']);
-Route::put('/currencies/{currency}', [CurrencyController::class, 'update']);
-Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy']);
+    Route::get('/settings/threshold', [SettingController::class, 'show']);
+    Route::put('/settings/threshold', [SettingController::class, 'update']);
 
-Route::get('/cash-deposits', [CashDepositController::class, 'index']);
-Route::post('/cash-deposits', [CashDepositController::class, 'store']);
+    Route::get('/branches', [BranchController::class, 'index']);
+    Route::post('/branches', [BranchController::class, 'store']);
+    Route::get('/branches/{branch}', [BranchController::class, 'show']);
+    Route::put('/branches/{branch}', [BranchController::class, 'update']);
+    Route::delete('/branches/{branch}', [BranchController::class, 'destroy']);
 
-Route::get('/cash-balances', [CashBalanceController::class, 'index']);
+    Route::get('/currencies', [CurrencyController::class, 'index']);
+    Route::post('/currencies', [CurrencyController::class, 'store']);
+    Route::get('/currencies/{currency}', [CurrencyController::class, 'show']);
+    Route::put('/currencies/{currency}', [CurrencyController::class, 'update']);
+    Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy']);
 
-Route::get('/cash-reconciliations', [CashReconciliationController::class, 'index']);
-Route::post('/cash-reconciliations', [CashReconciliationController::class, 'store']);
+    Route::get('/cash-deposits', [CashDepositController::class, 'index']);
+    Route::post('/cash-deposits', [CashDepositController::class, 'store']);
 
-Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
-Route::get('/reports/profit-loss/export', [ReportController::class, 'profitLossExport']);
-Route::get('/reports/employee-performance', [ReportController::class, 'employeePerformance']);
-Route::get('/reports/employee-performance/export', [ReportController::class, 'employeePerformanceExport']);
+    Route::get('/cash-balances', [CashBalanceController::class, 'index']);
 
-Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
-Route::get('/dashboard/trend', [DashboardController::class, 'trend']);
+    Route::get('/cash-reconciliations', [CashReconciliationController::class, 'index']);
+    Route::post('/cash-reconciliations', [CashReconciliationController::class, 'store']);
+
+    Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
+    Route::get('/reports/profit-loss/export', [ReportController::class, 'profitLossExport']);
+    Route::get('/reports/employee-performance', [ReportController::class, 'employeePerformance']);
+    Route::get('/reports/employee-performance/export', [ReportController::class, 'employeePerformanceExport']);
+
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('/dashboard/trend', [DashboardController::class, 'trend']);
+});

@@ -6,11 +6,21 @@ use App\Models\Currency;
 use App\Models\ExchangeRate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ExchangeRateApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $actingUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingUser = User::factory()->create();
+        Sanctum::actingAs($this->actingUser);
+    }
 
     public function test_index_returns_each_currency_with_its_latest_rate(): void
     {
@@ -67,13 +77,11 @@ class ExchangeRateApiTest extends TestCase
 
     public function test_update_creates_first_rate_without_history(): void
     {
-        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
         $usd = Currency::create(['code' => 'USD']);
 
         $response = $this->putJson("/api/exchange-rates/{$usd->id}", [
             'rate_buy' => 15750,
             'rate_sell' => 15850,
-            'user_id' => $user->id,
         ]);
 
         $response->assertOk();
@@ -97,7 +105,6 @@ class ExchangeRateApiTest extends TestCase
         $response = $this->putJson("/api/exchange-rates/{$usd->id}", [
             'rate_buy' => 15750,
             'rate_sell' => 15850,
-            'user_id' => $user->id,
         ]);
 
         $response->assertOk();
@@ -110,7 +117,7 @@ class ExchangeRateApiTest extends TestCase
             'old_sell' => '15800.00',
             'new_buy' => '15750.00',
             'new_sell' => '15850.00',
-            'changed_by' => $user->id,
+            'changed_by' => $this->actingUser->id,
         ]);
     }
 
@@ -128,14 +135,13 @@ class ExchangeRateApiTest extends TestCase
 
     public function test_history_lists_changes_for_that_currency_only_newest_first(): void
     {
-        $user = User::create(['name' => 'Admin', 'email' => 'admin@test.local', 'password' => 'secret']);
         $usd = Currency::create(['code' => 'USD']);
         $sgd = Currency::create(['code' => 'SGD']);
 
-        $this->putJson("/api/exchange-rates/{$usd->id}", ['rate_buy' => 15700, 'rate_sell' => 15800, 'user_id' => $user->id]);
-        $this->putJson("/api/exchange-rates/{$usd->id}", ['rate_buy' => 15750, 'rate_sell' => 15850, 'user_id' => $user->id]);
-        $this->putJson("/api/exchange-rates/{$sgd->id}", ['rate_buy' => 11600, 'rate_sell' => 11750, 'user_id' => $user->id]);
-        $this->putJson("/api/exchange-rates/{$sgd->id}", ['rate_buy' => 11650, 'rate_sell' => 11800, 'user_id' => $user->id]);
+        $this->putJson("/api/exchange-rates/{$usd->id}", ['rate_buy' => 15700, 'rate_sell' => 15800]);
+        $this->putJson("/api/exchange-rates/{$usd->id}", ['rate_buy' => 15750, 'rate_sell' => 15850]);
+        $this->putJson("/api/exchange-rates/{$sgd->id}", ['rate_buy' => 11600, 'rate_sell' => 11750]);
+        $this->putJson("/api/exchange-rates/{$sgd->id}", ['rate_buy' => 11650, 'rate_sell' => 11800]);
 
         $response = $this->getJson("/api/exchange-rates/{$usd->id}/history");
 
@@ -143,6 +149,6 @@ class ExchangeRateApiTest extends TestCase
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('data.0.old_buy', '15700.00');
         $response->assertJsonPath('data.0.new_buy', '15750.00');
-        $response->assertJsonPath('data.0.changed_by', 'Admin');
+        $response->assertJsonPath('data.0.changed_by', $this->actingUser->name);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSettingRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,7 +14,8 @@ class UpdateSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'review_threshold' => ['required', 'numeric', 'gt:0'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
         ];
     }
 }

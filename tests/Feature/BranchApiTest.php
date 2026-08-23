@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\Branch;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BranchApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_index_lists_branches_sorted_by_name(): void
     {

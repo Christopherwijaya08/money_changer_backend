@@ -20,7 +20,7 @@ class SettingController extends Controller
         $setting = Setting::current();
         $setting->update([
             'review_threshold' => $data['review_threshold'],
-            'updated_by' => $data['user_id'],
+            'updated_by' => $request->user()->id,
         ]);
 
         return new SettingResource($setting->load('updatedBy'));

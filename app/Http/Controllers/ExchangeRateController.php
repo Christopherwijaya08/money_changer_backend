@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateExchangeRateRequest;
 use App\Http\Resources\ExchangeRateHistoryResource;
 use App\Http\Resources\ExchangeRateResource;
+use App\Models\AuditLog;
 use App\Models\Currency;
 use App\Models\ExchangeRateHistory;
 use Illuminate\Http\Request;
@@ -48,7 +49,25 @@ class ExchangeRateController extends Controller
                 'new_sell' => $data['rate_sell'],
                 'changed_by' => $request->user()->id,
             ]);
+
+            $description = sprintf(
+                '%s: kurs beli %s → %s, kurs jual %s → %s',
+                $currency->code,
+                number_format($previous->rate_buy, 0, ',', '.'),
+                number_format($data['rate_buy'], 0, ',', '.'),
+                number_format($previous->rate_sell, 0, ',', '.'),
+                number_format($data['rate_sell'], 0, ',', '.'),
+            );
+        } else {
+            $description = sprintf(
+                '%s: kurs beli ditetapkan %s, kurs jual ditetapkan %s',
+                $currency->code,
+                number_format($data['rate_buy'], 0, ',', '.'),
+                number_format($data['rate_sell'], 0, ',', '.'),
+            );
         }
+
+        AuditLog::record($request->user()->id, 'exchange_rate', $description);
 
         return new ExchangeRateResource($currency->load('latestExchangeRate.createdBy'));
     }

@@ -87,6 +87,10 @@ class ExchangeRateApiTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('data.rate_buy', '15750.00');
         $this->assertDatabaseCount('exchange_rate_history', 0);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'exchange_rate',
+            'description' => 'USD: kurs beli ditetapkan 15.750, kurs jual ditetapkan 15.850',
+        ]);
     }
 
     public function test_update_overwrites_todays_rate_and_logs_history(): void
@@ -118,6 +122,10 @@ class ExchangeRateApiTest extends TestCase
             'new_buy' => '15750.00',
             'new_sell' => '15850.00',
             'changed_by' => $this->actingUser->id,
+        ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'exchange_rate',
+            'description' => 'USD: kurs beli 15.700 → 15.750, kurs jual 15.800 → 15.850',
         ]);
     }
 

@@ -4,31 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\Branch;
 use App\Models\Employee;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class EmployeeApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_unauthenticated_store_is_rejected(): void
+    public function test_index_returns_all_employees_sorted_by_name(): void
     {
-        $this->postJson('/api/employees', ['name' => 'Hendra Wijaya'])->assertUnauthorized();
-    }
-
-    public function test_index_does_not_require_authentication(): void
-    {
-        Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
-
-        $this->getJson('/api/employees')->assertOk();
-    }
-
-    public function test_index_only_returns_active_employees_sorted_by_name(): void
-    {
-        Sanctum::actingAs(User::factory()->create());
-
         Employee::create(['name' => 'Fajar Nugroho', 'position' => 'Supervisor', 'is_active' => true]);
         Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
         Employee::create(['name' => 'Guntur Saputra', 'position' => 'Teller', 'is_active' => false]);
@@ -36,14 +20,26 @@ class EmployeeApiTest extends TestCase
         $response = $this->getJson('/api/employees');
 
         $response->assertOk();
-        $response->assertJsonCount(2, 'data');
+        $response->assertJsonCount(3, 'data');
         $response->assertJsonPath('data.0.name', 'Dewi Anggraini');
         $response->assertJsonPath('data.1.name', 'Fajar Nugroho');
+        $response->assertJsonPath('data.2.name', 'Guntur Saputra');
+    }
+
+    public function test_index_can_filter_to_active_only(): void
+    {
+        Employee::create(['name' => 'Dewi Anggraini', 'is_active' => true]);
+        Employee::create(['name' => 'Guntur Saputra', 'is_active' => false]);
+
+        $response = $this->getJson('/api/employees?active_only=1');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.name', 'Dewi Anggraini');
     }
 
     public function test_index_filters_by_branch(): void
     {
-        Sanctum::actingAs(User::factory()->create());
         $jakarta = Branch::create(['name' => 'Cabang Jakarta']);
         $surabaya = Branch::create(['name' => 'Cabang Surabaya']);
         Employee::create(['name' => 'Dewi Anggraini', 'is_active' => true, 'branch_id' => $jakarta->id]);
@@ -58,7 +54,6 @@ class EmployeeApiTest extends TestCase
 
     public function test_store_creates_employee(): void
     {
-        Sanctum::actingAs(User::factory()->create());
         $branch = Branch::create(['name' => 'Cabang Pusat - Jakarta']);
 
         $response = $this->postJson('/api/employees', [
@@ -75,8 +70,6 @@ class EmployeeApiTest extends TestCase
 
     public function test_store_rejects_missing_name(): void
     {
-        Sanctum::actingAs(User::factory()->create());
-
         $response = $this->postJson('/api/employees', ['position' => 'Teller']);
 
         $response->assertUnprocessable();
@@ -85,7 +78,6 @@ class EmployeeApiTest extends TestCase
 
     public function test_update_changes_employee_fields(): void
     {
-        Sanctum::actingAs(User::factory()->create());
         $employee = Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
 
         $response = $this->putJson("/api/employees/{$employee->id}", [
@@ -102,7 +94,6 @@ class EmployeeApiTest extends TestCase
 
     public function test_update_without_is_active_leaves_status_untouched(): void
     {
-        Sanctum::actingAs(User::factory()->create());
         $employee = Employee::create(['name' => 'Dewi Anggraini', 'position' => 'Teller', 'is_active' => true]);
 
         $response = $this->putJson("/api/employees/{$employee->id}", [

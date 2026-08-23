@@ -12,7 +12,7 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         $employees = Employee::with('branch')
-            ->where('is_active', true)
+            ->when($request->boolean('active_only'), fn ($q) => $q->where('is_active', true))
             ->when($request->query('branch_id'), fn ($q, $id) => $q->where('branch_id', $id))
             ->orderBy('name')
             ->get();

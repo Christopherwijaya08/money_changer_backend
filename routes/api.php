@@ -32,14 +32,11 @@ Route::post('/customers/{customer}/ktp-photo', [CustomerController::class, 'uplo
 Route::get('/customers/{customer}/ktp-photo', [CustomerController::class, 'ktpPhoto']);
 Route::get('/customers/{customer}/transactions', [CustomerController::class, 'transactions']);
 
-// ponytail: GET is public so the "Dilayani oleh" picker on the transaction form
-// works without a real session yet; writes stay admin-gated. Revisit once
-// Sanctum login (Fase 5) is real and every read can carry a token too.
+// ponytail: fully public until Sanctum login (Fase 5) is real — same interim
+// stance as transactions/cash/settings (client-supplied fields, no token yet).
 Route::get('/employees', [EmployeeController::class, 'index']);
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/employees', [EmployeeController::class, 'store']);
-    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-});
+Route::post('/employees', [EmployeeController::class, 'store']);
+Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 Route::put('/exchange-rates/{currency}', [ExchangeRateController::class, 'update']);
